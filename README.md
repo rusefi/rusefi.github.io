@@ -2,4 +2,4 @@
 
 Hello rusEFI Pages
 
-[pinouts](pinouts)
+* <a href="pinouts">pinouts</a>
