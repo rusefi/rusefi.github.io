@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<style>
+.pin-marker {
+  position: absolute;
+  z-index: 1;
+  border-radius: 50%;
+  background-color: white;
+  border: 0.21vw black solid;
+  cursor: pointer;
+  color: black;
+  text-align: center;
+  line-height: 200%;
+}
+
+[data-type*="12v"],
+[data-type*="12V"] {
+  border-color: yellow;
+}
+
+[data-type*="5v"],
+[data-type*="5V"] {
+  border-color: red;
+}
+
+[data-type*="at"] {
+  border-color: green;
+}
+
+[data-type*="av"] {
+  border-color: brown;
+}
+
+[data-type*="can"] {
+  border-color: blue;
+}
+
+[data-type*="din"] {
+  border-color: lime;
+}
+
+[data-type*="etb"] {
+  border-color: darkcyan;
+}
+
+[data-type*="gnd"] {
+  border-color: darkgreen;
+}
+
+[data-type*="gp_high"] {
+  border-color: aqua;
+}
+
+[data-type*="gp_low"] {
+  border-color: aquamarine;
+}
+
+[data-type*="gp_pp"] {
+  border-color: cyan;
+}
+
+[data-type*="hall"] {
+  border-color: darkolivegreen;
+}
+
+[data-type*="hl"] {
+  border-color: gold;
+}
+
+[data-type*="hs"] {
+  border-color: indigo;
+}
+
+[data-type*="ign"] {
+  border-color: magenta;
+}
+
+[data-type*="inj"] {
+  border-color: maroon;
+}
+
+[data-type*="ls"] {
+  border-color: lightgreen;
+}
+
+[data-type*="mr"] {
+  border-color: firebrick;
+}
+
+[data-type*="pgnd"] {
+  border-color: coral;
+}
+
+[data-type*="sgnd"] {
+  border-color: olive;
+}
+
+[data-type*="usb"] {
+  border-color: lightseagreen;
+}
+
+[data-type*="vr"] {
+  border-color: sienna;
+}
+
+.pin-marker:hover {
+  transform: scale(2);
+  z-index: 2;
+}
+
+.pin-marker.highlight {
+  background-color: #fc935a;
+}
+
+.pin-marker.selected {
+  background-color: #f15a24;
+  color: white;
+}
+
+.connector-container {
+  width: 100%;
+  overflow-x: scroll;
+  position: relative;
+  height: max(3in, 50vh);
+}
+
+.connector-div {
+  height: 100%;
+  position: relative;
+  z-index: 0;
+  width: max-content;
+}
+
+.connector-img {
+  height: 100%;
+  min-width: 100%;
+}
+
+table {
+  font-family: Arial, Helvetica, sans-serif;
+  border-collapse: collapse;
+  width: clamp(100%, 100%, 1000px);
+  text-align: left;
+}
+
+@media (min-width: 1000px) {
+  table {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 1000px) {
+  table {
+    word-wrap: break-word;
+    font-size: 2.5rem;
+  }
+}
+
+table tbody tr {
+  cursor: pointer;
+}
+
+@media screen {
+  td.pin-data {
+    border-color: black;
+  }
+}
+
+table td, table th {
+    border: 1px solid black;
+  padding: 8px;
+}
+
+table tr:nth-child(even){
+  background-color: #fc935a;
+}
+
+table tr:hover {
+  background-color: #f15a24;
+}
+
+table th {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  text-align: left;
+  background-color: #f15a24;
+  color: black;
+}
+
+.info-table {
+  display: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  html {
+    background-color: black;
+    color: white;
+  }
+
+  td.pin-data {
+    border: 1px solid #ddd;
+  }
+
+  table td, table th {
+    border: 1px solid #ddd;
+  }
+
+  table th {
+    color: white;
+  }
+
+  table tr:nth-child(even){
+    background-color: #230c00;
+    color: white;
+  }
+
+  table tr:hover {
+    background-color: #f15a24;
+  }
+}
+
+@media print {
+  .container {
+    height: 99vh;
+    display: flex;
+    flex-direction: column;
+  }
+  .info-table, .ts-data, .ts-header, .type-data, .type-header, .color-data, .color-header, thead {
+    display: none;
+  }
+  .connector-container {
+    flex: 0 1 auto;
+    height: unset;
+    min-height: 2in;
+  }
+  .connector-div {
+    max-width: 100%;
+    height: unset;
+  }
+  .connector-img {
+    max-width: 100% !important;
+    max-height: 3in;
+  }
+  h2 {
+    font-size: 14px;
+  }
+  th {
+    font-size: 12px;
+  }
+  td {
+    font-size: 10px;
+  }
+  td:not(.pin-data) {
+    border: none !important;
+  }
+  td.pin-data {
+    border-width: 3px;
+    border-radius: 10px;
+    width: 10px;
+    margin: 0px;
+    padding: 0px;
+  }
+  html, tr {
+    background-color: white !important;
+    color: black !important;
+  }
+  table {
+    width: auto;
+    border-collapse: separate;
+  }
+  .table-wrapper { 
+    column-count: 4;
+  }
+  table, tbody, tr {
+    display: block;
+  }
+}
+</style>
+
+<script type="text/javascript">
+var connectorData = [
+`{ "pins": [ { "pin": "K1", "function": "GND", "type": "gnd" }, { "pin": "K2", "function": "V ign" }, { "pin": "K3", "function": "GND", "type": "gnd" }, { "pin": "K4", "function": "V raw" }, { "pin": "K5", "function": "GND", "type": "gnd" }, { "pin": "K6", "function": "12v perm" }, { "pin": "K10", "function": "presure sensor" }, { "pin": "K11", "function": "Analog Ground" }, { "pin": "K12", "ts_name": "KNOCK - k12", "function": "Knock sens. in" }, { "pin": "K13", "function": "Analog Ground" }, { "pin": "K14", "function": "Analog Ground" }, { "pin": "K15", "id": [ "GPIOF_11" ], "function": "Cam Sensor", "class": [ "event_inputs" ], "ts_name": "Cam - K15" }, { "pin": "K16", "function": "Analog Ground" }, { "pin": "K17", "function": "Crank Sensor", "id": [ "GPIOB_1" ], "class": [ "event_inputs" ], "ts_name": "Crank - K17" }, { "pin": "K21", "ts_name": "Ambient Temperature" }, { "pin": "K22", "ts_name": "BK2 Wastegate Position - 22" }, { "pin": "K25", "id": "GPIOG_7", "class": "outputs", "ts_name": "INJ_1 k25", "function": "Injector 1", "type": "inj" }, { "pin": "K26", "id": "GPIOG_8", "class": "outputs", "ts_name": "INJ_2 k26", "function": "Injector 2", "type": "inj" }, { "pin": "K27", "id": "GPIOD_11", "class": "outputs", "ts_name": "INJ_3 k27", "function": "Injector 3", "type": "inj" }, { "pin": "K28", "id": "GPIOD_10", "class": "outputs", "ts_name": "INJ_4 k28", "function": "Injector 4", "type": "inj" }, { "pin": "K30", "function": "sensor +5v feed", "type": "5v" }, { "pin": "K31", "id": "EFI_ADC_10", "class": "analog_inputs", "ts_name": "Map Sensor K31", "function": "Manifold Pressure Sensor" }, { "pin": "K32", "id": "EFI_ADC_8", "class": "analog_inputs", "ts_name": "TPS 2", "function": "TPS 2 sensor input" }, { "pin": "K33", "id": "EFI_ADC_12", "class": "analog_inputs", "ts_name": "CLT", "function": "CLT" }, { "pin": "K34", "function": "Analog Ground" }, { "pin": "K35", "id": "EFI_ADC_14", "class": "analog_inputs", "ts_name": "PPS 2", "function": "PPS 2 sensor input" }, { "pin": "K36", "function": "sensor +5v feed", "type": "5v" }, { "pin": "K37", "function": "Analog Ground" }, { "pin": "K39", "function": "Analog Ground" }, { "pin": "K40", "function": "Vehicle Speed Sensor" }, { "pin": "K43", "function": "sensor +5v feed", "type": "5v" }, { "pin": "K44", "function": "Analog Ground" }, { "pin": "K47", "class": "outputs", "function": "BK1 Wastegate Solenoid" }, { "pin": "K53", "id": "EFI_ADC_13", "class": "analog_inputs", "ts_name": "IAT", "function": "IAT" }, { "pin": "K57", "function": "Analog Ground" }, { "pin": "K58", "class": "analog_inputs", "ts_name": "Oil Temp", "function": "Oil Temperature" }, { "pin": "K59", "function": "Analog Ground" }, { "pin": "K60", "function": "sensor +5v feed", "type": "5v" }, { "pin": "K61", "function": "Analog Ground" }, { "pin": "K62", "id": [ "GPIOA_6" ], "function": "Cam Sensor", "class": [ "event_inputs" ], "ts_name": "Cam - K62" }, { "pin": "K63", "function": "sensor +5v feed", "type": "5v" }, { "pin": "K64", "id": "GPIOG_14", "class": "outputs", "ts_name": "Main Relay K64", "function": "Main relay control", "type": "ls" }, { "pin": "K70", "id": "GPIOG_13", "class": "outputs", "ts_name": "Fuel Pump K70", "function": "Fuel Pump Relay", "type": "ls" }, { "pin": "K71", "ts_name": "ETB w1", "function": "DC Motor w1" }, { "pin": "K72", "ts_name": "ETB w2", "function": "DC Motor w2" }, { "pin": "K77", "function": "CAN bus high", "type": "can" }, { "pin": "K78", "function": "CAN bus low", "type": "can" }, { "pin": "K79", "function": "Analog Ground" }, { "pin": "K80", "class": "analog_inputs", "ts_name": "TPS 1", "function": "TPS 1 sensor input" }, { "pin": "K82", "ts_name": "PPS 1", "function": "PPS 1 sensor input" }, { "pin": "K85", "function": "Analog Ground" }, { "pin": "K86", "ts_name": "Tacho", "function": "Tachometer" }, { "pin": "K88", "id": "GPIOG_4", "ts_name": "Fan Relay HI", "function": "Fan relay high" }, { "pin": "K92", "id": "GPIOD_12", "ts_name": "MIL", "function": "Check Engine Light" }, { "pin": "A1", "ts_name": "Coil 4", "function": "Coil 4", "type": "ign" }, { "pin": "A2", "function": "Shield Ground" }, { "pin": "A15", "function": "Ground" }, { "pin": "A16", "ts_name": "Coil 2", "function": "Coil 2", "type": "ign" }, { "pin": "A29", "class": "switch_inputs", "ts_name": "rake Input", "function": "Brake Switch" }, { "pin": "A31", "ts_name": "Coil 1", "function": "Coil 1", "type": "ign" }, { "pin": "A43", "function": "Clutch Input" }, { "pin": "A45", "function": "BK2 DC Wastegate Pos" }, { "pin": "A46", "ts_name": "Coil 3", "function": "Coil 3", "type": "ign" }, { "pin": "A57", "function": "AC Request Switch" }, { "pin": "A60", "function": "BK2 DC Wastegate Neg" } ], "info": { "title": "Hellen 154 Hyundai", "image": { "file": "main.jpg" }, "pins": [ { "pin": "K1", "x": 1900, "y": 660 }, { "pin": "K2", "x": 2055, "y": 660 }, { "pin": "K3", "x": 1900, "y": 458 }, { "pin": "K4", "x": 2055, "y": 458 }, { "pin": "K5", "x": 1900, "y": 259 }, { "pin": "K6", "x": 2055, "y": 259 }, { "pin": "K7", "x": 2251, "y": 660 }, { "pin": "K8", "x": 2340, "y": 660 }, { "pin": "K9", "x": 2412, "y": 660 }, { "pin": "K10", "x": 2492, "y": 660 }, { "pin": "K11", "x": 2566, "y": 660 }, { "pin": "K12", "x": 2633, "y": 660 }, { "pin": "K13", "x": 2714, "y": 660 }, { "pin": "K14", "x": 2791, "y": 660 }, { "pin": "K15", "x": 2865, "y": 660 }, { "pin": "K16", "x": 2940, "y": 660 }, { "pin": "K17", "x": 3011, "y": 660 }, { "pin": "K18", "x": 3086, "y": 660 }, { "pin": "K19", "x": 3161, "y": 660 }, { "pin": "K20", "x": 3235, "y": 660 }, { "pin": "K21", "x": 3314, "y": 660 }, { "pin": "K22", "x": 3386, "y": 660 }, { "pin": "K23", "x": 3458, "y": 660 }, { "pin": "K24", "x": 3530, "y": 660 }, { "pin": "K25", "x": 3605, "y": 660 }, { "pin": "K26", "x": 3681, "y": 660 }, { "pin": "K27", "x": 3754, "y": 660 }, { "pin": "K28", "x": 3827, "y": 660 }, { "pin": "K29", "x": 2251, "y": 571 }, { "pin": "K30", "x": 2340, "y": 571 }, { "pin": "K31", "x": 2412, "y": 571 }, { "pin": "K32", "x": 2492, "y": 571 }, { "pin": "K33", "x": 2566, "y": 571 }, { "pin": "K34", "x": 2633, "y": 571 }, { "pin": "K35", "x": 2714, "y": 571 }, { "pin": "K36", "x": 2791, "y": 571 }, { "pin": "K37", "x": 2865, "y": 571 }, { "pin": "K38", "x": 2940, "y": 571 }, { "pin": "K39", "x": 3011, "y": 571 }, { "pin": "K40", "x": 3086, "y": 571 }, { "pin": "K41", "x": 3161, "y": 571 }, { "pin": "K42", "x": 3235, "y": 571 }, { "pin": "K43", "x": 3314, "y": 571 }, { "pin": "K44", "x": 3386, "y": 571 }, { "pin": "K45", "x": 3458, "y": 571 }, { "pin": "K46", "x": 3530, "y": 571 }, { "pin": "K47", "x": 3605, "y": 571 }, { "pin": "K48", "x": 3681, "y": 571 }, { "pin": "K49", "x": 3754, "y": 571 }, { "pin": "K50", "x": 3827, "y": 571 }, { "pin": "K51", "x": 2251, "y": 342 }, { "pin": "K52", "x": 2340, "y": 342 }, { "pin": "K53", "x": 2412, "y": 342 }, { "pin": "K54", "x": 2492, "y": 342 }, { "pin": "K55", "x": 2566, "y": 342 }, { "pin": "K56", "x": 2633, "y": 342 }, { "pin": "K57", "x": 2714, "y": 342 }, { "pin": "K58", "x": 2791, "y": 342 }, { "pin": "K59", "x": 2865, "y": 342 }, { "pin": "K60", "x": 2940, "y": 342 }, { "pin": "K61", "x": 3011, "y": 342 }, { "pin": "K62", "x": 3086, "y": 342 }, { "pin": "K63", "x": 3161, "y": 342 }, { "pin": "K64", "x": 3235, "y": 342 }, { "pin": "K65", "x": 3314, "y": 342 }, { "pin": "K66", "x": 3386, "y": 342 }, { "pin": "K67", "x": 3458, "y": 342 }, { "pin": "K68", "x": 3530, "y": 342 }, { "pin": "K69", "x": 3605, "y": 342 }, { "pin": "K70", "x": 3681, "y": 342 }, { "pin": "K71", "x": 3754, "y": 342 }, { "pin": "K72", "x": 3827, "y": 342 }, { "pin": "K73", "x": 2251, "y": 258 }, { "pin": "K74", "x": 2340, "y": 258 }, { "pin": "K75", "x": 2412, "y": 258 }, { "pin": "K76", "x": 2492, "y": 258 }, { "pin": "K77", "x": 2566, "y": 258 }, { "pin": "K78", "x": 2633, "y": 258 }, { "pin": "K79", "x": 2714, "y": 258 }, { "pin": "K80", "x": 2791, "y": 258 }, { "pin": "K81", "x": 2865, "y": 258 }, { "pin": "K82", "x": 2940, "y": 258 }, { "pin": "K83", "x": 3011, "y": 258 }, { "pin": "K84", "x": 3086, "y": 258 }, { "pin": "K85", "x": 3161, "y": 258 }, { "pin": "K86", "x": 3235, "y": 258 }, { "pin": "K87", "x": 3314, "y": 258 }, { "pin": "K88", "x": 3386, "y": 258 }, { "pin": "K89", "x": 3458, "y": 258 }, { "pin": "K90", "x": 3530, "y": 258 }, { "pin": "K91", "x": 3605, "y": 258 }, { "pin": "K92", "x": 3681, "y": 258 }, { "pin": "K93", "x": 3754, "y": 258 }, { "pin": "K94", "x": 3827, "y": 258 }, { "pin": "A1", "x": 301, "y": 660 }, { "pin": "A2", "x": 410, "y": 660 }, { "pin": "A3", "x": 520, "y": 660 }, { "pin": "A4", "x": 623, "y": 660 }, { "pin": "A5", "x": 724, "y": 660 }, { "pin": "A6", "x": 815, "y": 660 }, { "pin": "A7", "x": 897, "y": 660 }, { "pin": "A8", "x": 967, "y": 660 }, { "pin": "A9", "x": 1044, "y": 660 }, { "pin": "A10", "x": 1118, "y": 660 }, { "pin": "A11", "x": 1193, "y": 660 }, { "pin": "A12", "x": 1270, "y": 660 }, { "pin": "A13", "x": 1348, "y": 660 }, { "pin": "A14", "x": 1414, "y": 660 }, { "pin": "A15", "x": 1504, "y": 660 }, { "pin": "A16", "x": 301, "y": 577 }, { "pin": "A17", "x": 410, "y": 577 }, { "pin": "A18", "x": 520, "y": 577 }, { "pin": "A19", "x": 623, "y": 577 }, { "pin": "A20", "x": 724, "y": 577 }, { "pin": "A21", "x": 815, "y": 577 }, { "pin": "A22", "x": 897, "y": 577 }, { "pin": "A23", "x": 967, "y": 577 }, { "pin": "A24", "x": 1044, "y": 577 }, { "pin": "A25", "x": 1118, "y": 577 }, { "pin": "A26", "x": 1193, "y": 577 }, { "pin": "A27", "x": 1270, "y": 577 }, { "pin": "A28", "x": 1348, "y": 577 }, { "pin": "A29", "x": 1414, "y": 577 }, { "pin": "A30", "x": 1504, "y": 577 }, { "pin": "A31", "x": 301, "y": 353 }, { "pin": "A32", "x": 410, "y": 353 }, { "pin": "A33", "x": 520, "y": 353 }, { "pin": "A34", "x": 623, "y": 353 }, { "pin": "A35", "x": 724, "y": 353 }, { "pin": "A36", "x": 815, "y": 353 }, { "pin": "A37", "x": 897, "y": 353 }, { "pin": "A38", "x": 967, "y": 353 }, { "pin": "A39", "x": 1044, "y": 353 }, { "pin": "A40", "x": 1118, "y": 353 }, { "pin": "A41", "x": 1193, "y": 353 }, { "pin": "A42", "x": 1270, "y": 353 }, { "pin": "A43", "x": 1348, "y": 353 }, { "pin": "A44", "x": 1414, "y": 353 }, { "pin": "A45", "x": 1504, "y": 353 }, { "pin": "A46", "x": 301, "y": 264 }, { "pin": "A47", "x": 410, "y": 264 }, { "pin": "A48", "x": 520, "y": 264 }, { "pin": "A49", "x": 623, "y": 264 }, { "pin": "A50", "x": 724, "y": 264 }, { "pin": "A51", "x": 815, "y": 264 }, { "pin": "A52", "x": 897, "y": 264 }, { "pin": "A53", "x": 967, "y": 264 }, { "pin": "A54", "x": 1044, "y": 264 }, { "pin": "A55", "x": 1118, "y": 264 }, { "pin": "A56", "x": 1193, "y": 264 }, { "pin": "A57", "x": 1270, "y": 264 }, { "pin": "A58", "x": 1348, "y": 264 }, { "pin": "A59", "x": 1414, "y": 264 }, { "pin": "A60", "x": 1504, "y": 264 } ] } }`,
+///DATA///
+];
+
+function hideEmptyColumns(table) {
+  var rows = table.querySelector('tbody').children;
+  var tableHead = table.querySelector("thead>tr")
+  var cols = tableHead.children
+  for (var i = 0; i < cols.length; i++) {
+    var empty = true;
+    for (var ii = 0; ii < rows.length; ii++) {
+      empty = rows[ii].children[i].textContent.length > 0 ? false : empty;
+    }
+    if (empty) {
+      tableHead.querySelectorAll('th')[i].style.display = 'none';
+      for (var ii = 0; ii < rows.length; ii++) {
+        rows[ii].children[i].style.display = 'none';
+      }
+    } else {
+      tableHead.querySelectorAll('th')[i].style.display = '';
+      for (var ii = 0; ii < rows.length; ii++) {
+        rows[ii].children[i].style.display = '';
+      }
+    }
+  }
+}
+
+function addRow(table, pin, cid) {
+  var template = document.getElementById("table-template");
+  var clone = template.content.cloneNode(true);
+  var row = clone.querySelector(".data");
+  var cells = row.children;
+  for (var i = 0; i < cells.length; i++) {
+    var cell = cells[i];
+    cell.textContent = Array.isArray(pin[cell.dataset.field]) ? pin[cell.dataset.field].join(", ") : pin[cell.dataset.field];
+  }
+  clone.querySelector(".pin-data").dataset.type = pin.type;
+  if (pin.pdiv) {
+    row.addEventListener('click', function(table, pin, cid) {
+      var container;
+      for (var elem = table; elem && elem !== document; elem = elem.parentNode) {
+        if (elem.matches(".container")) {
+          var container = elem;
+        };
+      }
+      clickPin(container.querySelector(".info-table tbody"), pin, cid);
+      container.scrollIntoView()
+    }.bind(null, table, pin, cid));
+  }
+  table.appendChild(clone);
+}
+
+function clickPin(table, pin, cid) {
+  table.parentElement.style.display = "table";
+  table.innerHTML = "";
+  addRow(table, pin, cid);
+  var pins = document.querySelectorAll(".pin-marker");
+  for (var i = 0; i < pins.length; i++) {
+    if (pins[i].dataset.type == pin.type) {
+      pins[i].classList.add("highlight");
+    } else {
+      pins[i].classList.remove("highlight");
+    }
+    pins[i].classList.remove("selected");
+  }
+  pin.pdiv.classList.add("selected");
+  hideEmptyColumns(table.parentElement);
+  if (typeof(cid) != "undefined") {
+    var url = new URL(window.location);
+    url.searchParams.set("connector", cid);
+    url.searchParams.set("pin", pin.pin);
+    window.history.pushState({}, "", url)
+  } else {
+    var url = new URL(window.location);
+    url.search = "";
+    window.history.pushState({}, "", url)
+  }
+}
+function checkparams() {
+  var params = new URLSearchParams(window.location.search);
+  var connector = params.get("connector");
+  var pin = params.get("pin");
+  for (var i = 0; i < connectorData.length; i++) {
+    var c = connectorData[i];
+    if (c.info.id == connector) {
+      var table = document.querySelectorAll(".info-table tbody")[i];
+      for (var iii = 0; iii < c.pins.length; iii++) {
+        if (c.pins[iii].pin == pin) {
+          clickPin(table, c.pins[iii], c.info.id);
+          return;
+        }
+      }
+      return;
+    }
+  }
+}
+
+var images = 0;
+
+function checkImagesLoaded() {
+  images -= 1;
+  if (images == 0) {
+    checkparams();
+  }
+}
+
+window.addEventListener('load', function() {
+  window.onpopstate = function(ev) {
+    if (event.state) {
+      checkparams();
+    }
+  };
+  for (var c = 0; c < connectorData.length; c++) {
+    connectorData[c] = JSON.parse(connectorData[c]);
+    var connector = connectorData[c];
+    var template = document.getElementById("connector-template");
+    var clone = template.content.cloneNode(true);
+    document.body.appendChild(clone);
+    var sdiv = document.body.lastChild.previousSibling;
+    var img = sdiv.querySelector(".connector-img");
+    images += 1;
+    img.addEventListener('load', function(connector, sdiv, img) {
+      var cdiv = sdiv.querySelector(".connector-div");
+      var cid = connector.info.id;
+      var ptemplate = document.getElementById("pin-template");
+      var imgHeight = img.naturalHeight;
+      var imgWidth = img.naturalWidth;
+      var table = sdiv.querySelector(".info-table").querySelector("tbody");
+      var fullTable = sdiv.querySelector(".pinout-table").querySelector("tbody");
+      for (var i = 0; i < connector.pins.length; i++) {
+        var pin = connector.pins[i];
+        if (!pin.pin) {
+          continue;
+        }
+        var pinfo = {};
+        for (var ii = 0; ii < connector.info.pins.length; ii++) {
+          if (connector.info.pins[ii].pin == pin.pin) {
+            pinfo = connector.info.pins[ii];
+            break;
+          }
+        }
+        if (!pinfo.x) {
+          addRow(fullTable, connector.pins[i], cid);
+          continue;
+        }
+        var closest = 1000000;
+        for (var ii = 0; ii < connector.info.pins.length; ii++) {
+          var tinfo = connector.info.pins[ii];
+          var distance = Math.pow((tinfo.x - pinfo.x), 2) + Math.pow((tinfo.y - pinfo.y), 2);
+          if (tinfo.pin != pin.pin && (!closest || distance < closest)) {
+            closest = distance;
+          }
+        }
+        var pclone = ptemplate.content.cloneNode(true);
+        var pdiv = pclone.querySelector("div");
+        pdiv.textContent = pinfo.pin;
+        pdiv.style.top = ((pinfo.y / imgHeight) * 100) + "%";
+        pdiv.style.left = ((pinfo.x / imgWidth) * 100) + "%";
+        pdiv.dataset.type = pin.type;
+        pin.pdiv = pdiv;
+        pdiv.addEventListener("click", function(table, pin, cid) {
+          clickPin(table, pin, cid);
+        }.bind(null, table, pin, cid));
+        closest = Math.sqrt(closest);
+        var divheight = cdiv.clientHeight;
+        var divwidth = cdiv.clientWidth;
+        var mult = cdiv.querySelector("img").naturalHeight / divheight;
+        var newheight = (closest / mult)
+        var pxheight = divheight * 0.08;
+        if (newheight < pxheight) {
+          pxheight = newheight;
+        }
+        var height = (pxheight / divheight) * 100;
+        var width = (pxheight / divwidth) * 100;
+        pdiv.style.height = "calc(" + height + "% - 0.21vw)";
+        pdiv.style.width = "calc(" +  width + "% - 0.21vw)";
+        pdiv.style.marginTop = "-" + (width / 2) + "%";
+        pdiv.style.marginLeft = "-" + (width / 2) + "%";
+        pdiv.style.fontSize = (height * 1.8) + "px";
+        pdiv.style.fontSize = (pxheight * 0.5) + "px";
+        window.addEventListener('beforeprint', function(pdiv, width, divwidth, event) {
+          pdiv.style.fontSize = "calc(calc(" + width + "px * min(640, "  + divwidth + ")) * 0.0055)";
+        }.bind(null, pdiv, width, divwidth));
+        window.addEventListener('afterprint', function(pdiv, pxheight, event) {
+          pdiv.style.fontSize = (pxheight * 0.5) + "px";
+        }.bind(null, pdiv, pxheight));
+        cdiv.appendChild(pdiv);
+        addRow(fullTable, pin, cid);
+      }
+      hideEmptyColumns(sdiv.querySelector('.pinout-table'));
+      checkImagesLoaded();
+    }.bind(null, connector, sdiv, img));
+    img.src = connector.info.image.file;
+    if (document.title.length == 0 && typeof(connector.info.title) != "undefined") {
+      document.title = connector.info.title;
+    }
+    if (typeof(connector.info.name) != "undefined") {
+      sdiv.querySelector(".connector-name").innerText = connector.info.name;
+    }
+  }
+});
+</script>
+</head>
+<body>
+
+<template id="pin-template">
+  <div class="pin-marker"></div>
+</template>
+
+<template id="table-template">
+  <tr class="data">
+    <td class="pin-data" data-field="pin"></td>
+    <td class="ts-data" data-field="ts_name"></td>
+    <td class="type-data" data-field="type"</td>
+    <td class="function-data" data-field="function"></td>
+    <td class="color-data" data-field="color"></td>
+  </tr>
+</template>
+
+<template id="connector-template">
+  <div class="container">
+    <h2 class="connector-name"></h2>
+    <div class="connector-container">
+      <div class="connector-div">
+        <img class="connector-img"></img>
+      </div>
+    </div>
+    <table class="info-table">
+      <thead>
+        <tr>
+          <th class="pin-header" data-field="pin">Pin Number</th>
+          <th class="ts-header" data-field="ts_name">TS Name</th>
+          <th class="type-header" data-field="type">Type</th>
+          <th class="function-header" data-field="function">Typical Function</th>
+          <th class="color-header" data-field="color">Pigtail Color</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+    <h2>Full Pinout Table</h2>
+    <div class="table-wrapper">
+      <table class="pinout-table">
+        <thead>
+          <tr>
+            <th class="pin-header" data-field="pin">Pin Number</th>
+            <th class="ts-header" data-field="ts_name">TS Name</th>
+            <th class="type-header" data-field="type">Type</th>
+            <th class="function-header" data-field="function">Typical Function</th>
+            <th class="color-header" data-field="color">Pigtail Color</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</template>
+
+</body>
+</html>
